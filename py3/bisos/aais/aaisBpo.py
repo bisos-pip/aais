@@ -3,7 +3,9 @@
 * *[Summary]* :: A /library/ Beginning point for development of new ICM oriented libraries.
 """
 
-icmInfo = { 'moduleDescription': ["""
+import typing
+
+icmInfo: typing.Dict[str, typing.Any] = { 'moduleDescription': ["""
 *       [[elisp:(org-show-subtree)][|=]]  [[elisp:(org-cycle)][| *Description:* | ]]
 **  [[elisp:(org-cycle)][| ]]  [Xref]          :: *[Related/Xrefs:]*  <<Xref-Here->>  -- External Documents  [[elisp:(org-cycle)][| ]]
 
@@ -88,12 +90,12 @@ icmInfo['cmndParts'] = "IcmCmndParts[common] IcmCmndParts[param]"
 
 
 import os
-import pwd
-import grp
+# import pwd
+# import grp
 import collections
-import enum
+# import enum
 
-####+BEGIN: bx:dblock:global:file-insert-cond :cond "./blee.el" :file "/bisos/apps/defaults/update/sw/icm/py/importUcfIcmBleepG.py"
+####+BEGIN: bx:dblock:global:file-insert-cond :cond "./blee.el" :file "/bisos/apps/defaults/update/sw/icm/py/importUcfIcmG.py"
 from unisos import ucf
 from unisos import icm
 
@@ -102,12 +104,10 @@ icm.unusedSuppressForEval(ucf.__file__)  # in case icm and ucf are not used
 G = icm.IcmGlobalContext()
 # G.icmLibsAppend = __file__
 # G.icmCmndsLibsAppend = __file__
-
-from blee.icmPlayer import bleep
 ####+END:
 
 from bisos.platform import bxPlatformConfig
-from bisos.platform import bxPlatformThis
+# from bisos.platform import bxPlatformThis
 
 from bisos.bpo import bpo
 
@@ -116,6 +116,78 @@ from bisos.bpo import bpo
 *  [[elisp:(beginning-of-buffer)][Top]] ############## [[elisp:(blee:ppmm:org-mode-toggle)][Nat]] [[elisp:(delete-other-windows)][(1)]]    *Start Your Sections Here*  [[elisp:(org-cycle)][| ]]  [[elisp:(org-show-subtree)][|=]]
 """
 ####+END:
+
+####+BEGIN: bx:dblock:python:func :funcName "si_serviceName" :funcType "Obtain" :retType "str" :deco "" :argsList "si"
+"""
+*  [[elisp:(org-cycle)][| ]] [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(bx:orgm:indirectBufOther)][|>]] [[elisp:(bx:orgm:indirectBufMain)][|I]] [[elisp:(blee:ppmm:org-mode-toggle)][|N]] [[elisp:(org-top-overview)][|O]] [[elisp:(progn (org-shifttab) (org-content))][|C]] [[elisp:(delete-other-windows)][|1]]  Func-Obtain    :: /si_serviceName/ retType=str argsList=(si)  [[elisp:(org-cycle)][| ]]
+"""
+def si_serviceName(
+    si,
+):
+####+END:
+    """
+**
+"""
+    siList = si.split('/')
+    return siList[0]
+
+####+BEGIN: bx:dblock:python:func :funcName "si_instanceName" :funcType "Obtain" :retType "str" :deco "" :argsList "si"
+"""
+*  [[elisp:(org-cycle)][| ]] [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(bx:orgm:indirectBufOther)][|>]] [[elisp:(bx:orgm:indirectBufMain)][|I]] [[elisp:(blee:ppmm:org-mode-toggle)][|N]] [[elisp:(org-top-overview)][|O]] [[elisp:(progn (org-shifttab) (org-content))][|C]] [[elisp:(delete-other-windows)][|1]]  Func-Obtain    :: /si_serviceName/ retType=str argsList=(si)  [[elisp:(org-cycle)][| ]]
+"""
+def si_instanceName(
+    si,
+):
+####+END:
+    """
+**
+"""
+    siList = si.split('/')
+    return siList[1]
+
+
+####+BEGIN: bx:dblock:python:func :funcName "si_serviceBaseDir" :funcType "Obtain" :retType "str" :deco "" :argsList "bpoId si"
+"""
+*  [[elisp:(org-cycle)][| ]] [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(bx:orgm:indirectBufOther)][|>]] [[elisp:(bx:orgm:indirectBufMain)][|I]] [[elisp:(blee:ppmm:org-mode-toggle)][|N]] [[elisp:(org-top-overview)][|O]] [[elisp:(progn (org-shifttab) (org-content))][|C]] [[elisp:(delete-other-windows)][|1]]  Func-Obtain    :: /si_serviceBaseDir/ retType=str argsList=(bpoId si)  [[elisp:(org-cycle)][| ]]
+"""
+def si_serviceBaseDir(
+    bpoId,
+    si,
+):
+####+END:
+    """
+**
+"""
+    bpoBaseDir = bpo.bpoBaseDir_obtain(bpoId)
+    siServiceName = si_serviceName(si)
+    return (
+        os.path.join(
+            bpoBaseDir,
+            format(f"si_{siServiceName}"),
+        )
+    )
+
+####+BEGIN: bx:dblock:python:func :funcName "si_instanceBaseDir" :funcType "Obtain" :retType "str" :deco "" :argsList "bpoId si"
+"""
+*  [[elisp:(org-cycle)][| ]] [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(bx:orgm:indirectBufOther)][|>]] [[elisp:(bx:orgm:indirectBufMain)][|I]] [[elisp:(blee:ppmm:org-mode-toggle)][|N]] [[elisp:(org-top-overview)][|O]] [[elisp:(progn (org-shifttab) (org-content))][|C]] [[elisp:(delete-other-windows)][|1]]  Func-Obtain    :: /si_instanceBaseDir/ retType=str argsList=(bpoId si)  [[elisp:(org-cycle)][| ]]
+"""
+def si_instanceBaseDir(
+    bpoId,
+    si,
+):
+####+END:
+    """
+**
+"""
+    svcInstance = si_instanceName(si)
+    svcBaseDir = si_serviceBaseDir(bpoId, si)
+    return (
+        os.path.join(
+            svcBaseDir,
+            svcInstance,
+        )
+    )
+
 
 
 ####+BEGIN: bx:dblock:python:func :funcName "siRootDir_obtain" :funcType "Obtain" :retType "str" :deco "" :argsList "bpoBaseDir"
@@ -151,7 +223,7 @@ def siFullPathBaseDir_obtain(
 """
     return (
         os.path.join(
-            srRootDir_obtain(
+            siRootDir_obtain(
                 bpo.bpoBaseDir_obtain(
                     bpoId
                 )
@@ -351,10 +423,7 @@ def examples_aaBpo_basicAccess():
     def menuItem(verbosity): icm.ex_gCmndMenuItem(cmndName, cps, cmndArgs, verbosity=verbosity) # 'little' or 'none'
     def execLineEx(cmndStr): icm.ex_gExecMenuItem(execLine=cmndStr)
 
-    # oneForeignBxo = "mcmFbxo"
-
     oneBpo = "pmi_ByD-100001"
-
     oneSiRelPath = "plone3/main"
 
     def moduleOverviewMenuItem(overviewCmndName):
@@ -421,9 +490,9 @@ class bpoSiFullPathBaseDir(icm.Cmnd):
         si = callParamsDict['si']
 
 ####+END:
-        retVal = srFullPathBaseDir_obtain(
+        retVal = siFullPathBaseDir_obtain(
             bpoId=bpoId,
-            srRelPath=si,
+            siRelPath=si,
         )
 
         if interactive:
@@ -466,7 +535,7 @@ class bpoSiRunRootBaseDir(icm.Cmnd):
         if interactive:
             if not self.cmndLineValidate(outcome=cmndOutcome):
                 return cmndOutcome
-            effectiveArgsList = G.icmRunArgsGet().cmndArgs
+            effectiveArgsList = G.icmRunArgsGet().cmndArgs  # type: ignore
         else:
             effectiveArgsList = argsList
 
