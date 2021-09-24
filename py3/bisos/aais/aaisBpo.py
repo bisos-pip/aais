@@ -117,11 +117,11 @@ from bisos.bpo import bpo
 """
 ####+END:
 
-####+BEGIN: bx:dblock:python:func :funcName "si_serviceName" :funcType "Obtain" :retType "str" :deco "" :argsList "si"
+####+BEGIN: bx:dblock:python:func :funcName "si_svcName" :funcType "Obtain" :retType "str" :deco "" :argsList "si"
 """
-*  [[elisp:(org-cycle)][| ]] [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(bx:orgm:indirectBufOther)][|>]] [[elisp:(bx:orgm:indirectBufMain)][|I]] [[elisp:(blee:ppmm:org-mode-toggle)][|N]] [[elisp:(org-top-overview)][|O]] [[elisp:(progn (org-shifttab) (org-content))][|C]] [[elisp:(delete-other-windows)][|1]]  Func-Obtain    :: /si_serviceName/ retType=str argsList=(si)  [[elisp:(org-cycle)][| ]]
+*  [[elisp:(org-cycle)][| ]] [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(bx:orgm:indirectBufOther)][|>]] [[elisp:(bx:orgm:indirectBufMain)][|I]] [[elisp:(blee:ppmm:org-mode-toggle)][|N]] [[elisp:(org-top-overview)][|O]] [[elisp:(progn (org-shifttab) (org-content))][|C]] [[elisp:(delete-other-windows)][|1]]  Func-Obtain    :: /si_svcName/ retType=str argsList=(si)  [[elisp:(org-cycle)][| ]]
 """
-def si_serviceName(
+def si_svcName(
     si,
 ):
 ####+END:
@@ -133,9 +133,9 @@ def si_serviceName(
 
 ####+BEGIN: bx:dblock:python:func :funcName "si_instanceName" :funcType "Obtain" :retType "str" :deco "" :argsList "si"
 """
-*  [[elisp:(org-cycle)][| ]] [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(bx:orgm:indirectBufOther)][|>]] [[elisp:(bx:orgm:indirectBufMain)][|I]] [[elisp:(blee:ppmm:org-mode-toggle)][|N]] [[elisp:(org-top-overview)][|O]] [[elisp:(progn (org-shifttab) (org-content))][|C]] [[elisp:(delete-other-windows)][|1]]  Func-Obtain    :: /si_serviceName/ retType=str argsList=(si)  [[elisp:(org-cycle)][| ]]
+*  [[elisp:(org-cycle)][| ]] [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(bx:orgm:indirectBufOther)][|>]] [[elisp:(bx:orgm:indirectBufMain)][|I]] [[elisp:(blee:ppmm:org-mode-toggle)][|N]] [[elisp:(org-top-overview)][|O]] [[elisp:(progn (org-shifttab) (org-content))][|C]] [[elisp:(delete-other-windows)][|1]]  Func-Obtain    :: /si_svcName/ retType=str argsList=(si)  [[elisp:(org-cycle)][| ]]
 """
-def si_instanceName(
+def si_virDomSvcName(
     si,
 ):
 ####+END:
@@ -146,11 +146,26 @@ def si_instanceName(
     return siList[1]
 
 
-####+BEGIN: bx:dblock:python:func :funcName "si_serviceBaseDir" :funcType "Obtain" :retType "str" :deco "" :argsList "bpoId si"
+####+BEGIN: bx:dblock:python:func :funcName "si_instanceName" :funcType "Obtain" :retType "str" :deco "" :argsList "si"
 """
-*  [[elisp:(org-cycle)][| ]] [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(bx:orgm:indirectBufOther)][|>]] [[elisp:(bx:orgm:indirectBufMain)][|I]] [[elisp:(blee:ppmm:org-mode-toggle)][|N]] [[elisp:(org-top-overview)][|O]] [[elisp:(progn (org-shifttab) (org-content))][|C]] [[elisp:(delete-other-windows)][|1]]  Func-Obtain    :: /si_serviceBaseDir/ retType=str argsList=(bpoId si)  [[elisp:(org-cycle)][| ]]
+*  [[elisp:(org-cycle)][| ]] [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(bx:orgm:indirectBufOther)][|>]] [[elisp:(bx:orgm:indirectBufMain)][|I]] [[elisp:(blee:ppmm:org-mode-toggle)][|N]] [[elisp:(org-top-overview)][|O]] [[elisp:(progn (org-shifttab) (org-content))][|C]] [[elisp:(delete-other-windows)][|1]]  Func-Obtain    :: /si_svcName/ retType=str argsList=(si)  [[elisp:(org-cycle)][| ]]
 """
-def si_serviceBaseDir(
+def si_instanceName(
+    si,
+):
+####+END:
+    """
+**
+"""
+    siList = si.split('/')
+    return siList[-1]
+
+
+####+BEGIN: bx:dblock:python:func :funcName "si_svcBaseDir" :funcType "Obtain" :retType "str" :deco "" :argsList "bpoId si"
+"""
+*  [[elisp:(org-cycle)][| ]] [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(bx:orgm:indirectBufOther)][|>]] [[elisp:(bx:orgm:indirectBufMain)][|I]] [[elisp:(blee:ppmm:org-mode-toggle)][|N]] [[elisp:(org-top-overview)][|O]] [[elisp:(progn (org-shifttab) (org-content))][|C]] [[elisp:(delete-other-windows)][|1]]  Func-Obtain    :: /si_svcBaseDir/ retType=str argsList=(bpoId si)  [[elisp:(org-cycle)][| ]]
+"""
+def si_svcBaseDir(
     bpoId,
     si,
 ):
@@ -159,7 +174,7 @@ def si_serviceBaseDir(
 **
 """
     bpoBaseDir = bpo.bpoBaseDir_obtain(bpoId)
-    siServiceName = si_serviceName(si)
+    siServiceName = si_svcName(si)
     return (
         os.path.join(
             bpoBaseDir,
@@ -167,10 +182,34 @@ def si_serviceBaseDir(
         )
     )
 
+####+BEGIN: bx:dblock:python:func :funcName "si_virDomSvcBaseDir" :funcType "Obtain" :retType "str" :deco "" :argsList "bpoId si"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Func-Obtain :: /si_virDomSvcBaseDir/ retType=str argsList=(bpoId si)  [[elisp:(org-cycle)][| ]]
+"""
+def si_virDomSvcBaseDir(
+    bpoId,
+    si,
+):
+####+END:
+    """
+**
+"""
+    svcVirDomName = si_virDomSvcName(si)
+    svcBaseDir = si_svcBaseDir(bpoId, si)
+    return (
+        os.path.join(
+            svcBaseDir,
+            svcVirDomName,
+        )
+    )
+
+
+
 ####+BEGIN: bx:dblock:python:func :funcName "si_instanceBaseDir" :funcType "Obtain" :retType "str" :deco "" :argsList "bpoId si"
 """
-*  [[elisp:(org-cycle)][| ]] [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(bx:orgm:indirectBufOther)][|>]] [[elisp:(bx:orgm:indirectBufMain)][|I]] [[elisp:(blee:ppmm:org-mode-toggle)][|N]] [[elisp:(org-top-overview)][|O]] [[elisp:(progn (org-shifttab) (org-content))][|C]] [[elisp:(delete-other-windows)][|1]]  Func-Obtain    :: /si_instanceBaseDir/ retType=str argsList=(bpoId si)  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Func-Obtain :: /si_instanceBaseDir/ retType=str argsList=(bpoId si) deco=icm.subjectToTracking  [[elisp:(org-cycle)][| ]]
 """
+@icm.subjectToTracking(fnLoc=True, fnEntry=True, fnExit=True)
 def si_instanceBaseDir(
     bpoId,
     si,
@@ -180,15 +219,69 @@ def si_instanceBaseDir(
 **
 """
     svcInstance = si_instanceName(si)
-    svcBaseDir = si_serviceBaseDir(bpoId, si)
+    svcVirDomName = si_virDomSvcName(si)
+    if svcInstance == svcVirDomName:
+        # Not a virDom
+        svcBaseDir = si_svcBaseDir(bpoId, si)
+        return (
+            os.path.join(
+                svcBaseDir,
+                svcInstance,
+            )
+        )
+    else:
+        virDomSvcBaseDir = si_virDomSvcBaseDir(bpoId, si)
+        return (
+            os.path.join(
+                virDomSvcBaseDir,
+                svcInstance,
+            )
+        )
+
+
+####+BEGIN: bx:dblock:python:func :funcName "si_primSvcBaseDir" :funcType "Obtain" :retType "str" :deco "" :argsList "bpoId si"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Func-Obtain :: /si_primSvcBaseDir/ retType=str argsList=(bpoId si)  [[elisp:(org-cycle)][| ]]
+"""
+def si_primSvcBaseDir(
+    bpoId,
+    si,
+):
+####+END:
+    """
+**
+"""
+    bpoBaseDir = bpo.bpoBaseDir_obtain(bpoId)
+    svcVirDomName = si_virDomSvcName(si)
     return (
         os.path.join(
-            svcBaseDir,
-            svcInstance,
+            bpoBaseDir,
+            format(f"si_{svcVirDomName}"),
         )
     )
 
 
+####+BEGIN: bx:dblock:python:func :funcName "si_primInstanceBaseDir" :funcType "Obtain" :retType "str" :deco "" :argsList "bpoId si"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Func-Obtain :: /si_primInstanceBaseDir/ retType=str argsList=(bpoId si)  [[elisp:(org-cycle)][| ]]
+"""
+def si_primInstanceBaseDir(
+    bpoId,
+    si,
+):
+####+END:
+    """
+**
+"""
+    svcInstance = si_instanceName(si)
+    primSvcBaseDir = si_primSvcBaseDir(bpoId, si)
+
+    return (
+        os.path.join(
+            primSvcBaseDir,
+            svcInstance,
+        )
+    )
 
 ####+BEGIN: bx:dblock:python:func :funcName "siRootDir_obtain" :funcType "Obtain" :retType "str" :deco "" :argsList "bpoBaseDir"
 """
