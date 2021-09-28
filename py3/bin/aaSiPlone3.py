@@ -235,11 +235,11 @@ class examples(icm.Cmnd):
         cps=cpsInit() ; cps['bpoId'] = oneBpo ; cps['si'] = oneSiRelPath
         menuItem(verbosity='none')
 
-        icm.cmndExampleMenuChapter('*dbaseInitialContent for Bystar Account*')
+        icm.cmndExampleMenuChapter('*Plone Site Initializations*')
 
-        cmndName = "dbaseFullUpdate" ; cmndArgs = oneBpo ;
+        cmndName = "ploneSiteCreate" ; cmndArgs = "" ;
         cps=cpsInit() ; cps['bpoId'] = oneBpo ; cps['si'] = oneSiRelPath
-        menuItem(verbosity='none')
+        menuItem(verbosity='little')
 
         cmndName = "dbaseCreate" ; cmndArgs = oneBpo ;
         cps=cpsInit() ; cps['bpoId'] = oneBpo ; cps['si'] = oneSiRelPath
@@ -487,29 +487,25 @@ class siBaseUpdate(icm.Cmnd):
 
 
 
-####+BEGIN: bx:icm:python:cmnd:classHead :cmndName "dbaseFullUpdate" :comment "" :parsMand "bpoId si" :parsOpt "" :argsMin "1" :argsMax "1" :asFunc "" :interactiveP ""
+####+BEGIN: bx:icm:python:cmnd:classHead :cmndName "ploneSiteCreate" :comment "" :parsMand "bpoId si" :parsOpt "" :argsMin "0" :argsMax "0" :asFunc "" :interactiveP ""
 """
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  ICM-Cmnd   :: /dbaseFullUpdate/ parsMand=bpoId si parsOpt= argsMin=1 argsMax=1 asFunc= interactive=  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  ICM-Cmnd   :: /ploneSiteCreate/ parsMand=bpoId si parsOpt= argsMin=0 argsMax=0 asFunc= interactive=  [[elisp:(org-cycle)][| ]]
 """
-class dbaseFullUpdate(icm.Cmnd):
+class ploneSiteCreate(icm.Cmnd):
     cmndParamsMandatory = [ 'bpoId', 'si', ]
     cmndParamsOptional = [ ]
-    cmndArgsLen = {'Min': 1, 'Max': 1,}
+    cmndArgsLen = {'Min': 0, 'Max': 0,}
 
     @icm.subjectToTracking(fnLoc=True, fnEntry=True, fnExit=True)
     def cmnd(self,
         interactive=False,        # Can also be called non-interactively
         bpoId=None,         # or Cmnd-Input
         si=None,         # or Cmnd-Input
-        argsList=[],         # or Args-Input
     ):
         cmndOutcome = self.getOpOutcome()
         if interactive:
             if not self.cmndLineValidate(outcome=cmndOutcome):
                 return cmndOutcome
-            effectiveArgsList = G.icmRunArgsGet().cmndArgs  # type: ignore
-        else:
-            effectiveArgsList = argsList
 
         callParamsDict = {'bpoId': bpoId, 'si': si, }
         if not icm.cmndCallParamsValidate(callParamsDict, interactive, outcome=cmndOutcome):
@@ -517,51 +513,17 @@ class dbaseFullUpdate(icm.Cmnd):
         bpoId = callParamsDict['bpoId']
         si = callParamsDict['si']
 
-        cmndArgsSpecDict = self.cmndArgsSpec()
-        if not self.cmndArgsValidate(effectiveArgsList, cmndArgsSpecDict, outcome=cmndOutcome):
-            return cmndOutcome
 ####+END:
 
-        dbaseName = effectiveArgsList[0]
+        invContext = invoke.context.Context(config=None)
 
-        print(f"dbaseName={dbaseName}")
-
-        outcome = dbaseInitialContentUpdate().cmnd(
-            interactive=False, bpoId=bpoId, si=si, argsList=[dbaseName],
-        )
-        if outcome.isProblematic(): return(icm.EH_badOutcome(outcome))
-
-        outcome = dbaseAccessControlVisible().cmnd(
-            interactive=False, bpoId=bpoId, si=si, argsList=[dbaseName],
-        )
-        if outcome.isProblematic(): return(icm.EH_badOutcome(outcome))
-
+        invContext.run(
+            """bystarPlone3Commands.sh ${G_commandOptions} -p bystarUid="${bystarUid}" -i ploneSiteAdd""")
 
         return cmndOutcome.set(
             opError=icm.OpError.Success,  # type: ignore
             opResults=None,
         )
-
-####+BEGIN: bx:icm:python:method :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList ""
-    """
-**  [[elisp:(org-cycle)][| ]] [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(bx:orgm:indirectBufOther)][|>]] [[elisp:(bx:orgm:indirectBufMain)][|I]] [[elisp:(blee:ppmm:org-mode-toggle)][|N]] [[elisp:(org-top-overview)][|O]] [[elisp:(progn (org-shifttab) (org-content))][|C]] [[elisp:(delete-other-windows)][|1]]  Method-anyOrNone :: /cmndArgsSpec/ retType=bool argsList=nil deco=default  [[elisp:(org-cycle)][| ]]
-"""
-    @icm.subjectToTracking(fnLoc=True, fnEntry=True, fnExit=True)
-    def cmndArgsSpec(self):
-####+END:
-        """
-***** Cmnd Args Specification
-"""
-        cmndArgsSpecDict = icm.CmndArgsSpecDict()
-        cmndArgsSpecDict.argsDictAdd(
-            argPosition="0",
-            argName='dbaseName',
-            argChoices='any',
-            argDescription="Name of the geneweb database",
-        )
-
-        return cmndArgsSpecDict
-
 
 ####+BEGIN: bx:icm:python:method :methodName "cmndDocStr" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList ""
     """
