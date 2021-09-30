@@ -110,6 +110,7 @@ from bisos.platform import bxPlatformConfig
 # from bisos.platform import bxPlatformThis
 
 from bisos.bpo import bpo
+# from bisos.aais import aaisBpo
 
 ####+BEGIN: bx:dblock:python:section :title "Start Your Sections Here"
 """
@@ -145,6 +146,23 @@ def si_instanceName(
     siList = si.split('/')
     return siList[-1]
 
+####+BEGIN: bx:dblock:python:func :funcName "si_virDomSvcName" :funcType "Obtain" :retType "str" :deco "" :argsList "si"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Func-Obtain :: /si_virDomSvcName/ retType=str argsList=(si)  [[elisp:(org-cycle)][| ]]
+"""
+def si_virDomSvcName(
+    si,
+):
+####+END:
+    """
+**
+"""
+    siList = si.split('/')
+    virDomName = siList[1]
+    if virDomName == si_instanceName(si):
+        return ""
+    else:
+        return virDomName
 
 ####+BEGIN: bx:dblock:python:func :funcName "si_svcBaseDir" :funcType "Obtain" :retType "str" :deco "" :argsList "bpoId si"
 """
@@ -292,7 +310,7 @@ def siRootDir_obtain(
 """
 def siFullPathBaseDir_obtain(
     bpoId,
-    srRelPath,
+    siRelPath,
 ):
 ####+END:
     """
@@ -324,10 +342,10 @@ def bpbBisos_baseObtain_control(
     baseDir,
 ):
 ####+END:
-    bxpRoot = "bxpRoot_baseObtain()"
+    # bxpRoot = "bxpRoot_baseObtain()"
 
     return( os.path.join(
-        bxpRoot, "bisos", "input"
+        baseDir, "bisos", "input"
     ))
 
 
@@ -344,11 +362,12 @@ def bpoSi_runBaseObtain_root(
     si,
 ):
 ####+END:
+    icm.unusedSuppress(si)
     return(
         os.path.join(
-            bxPlatformConfig.rootDir_deRun_fpObtain(configBaseDir=None,),
+            str(bxPlatformConfig.rootDir_deRun_fpObtain(configBaseDir=None,)),
             "bisos/r3/bpo",
-            bpoId,
+            str(bpoId),
         )
     )
 
@@ -411,16 +430,22 @@ def bpoSi_runBaseObtain_log(
         )
     )
 
-####+BEGIN: bx:dblock:python:section :title "Common Arguments Specification"
+####+BEGIN: bx:dblock:python:section :title "Class Definitions"
 """
-*  [[elisp:(beginning-of-buffer)][Top]] ############## [[elisp:(blee:ppmm:org-mode-toggle)][Nat]] [[elisp:(delete-other-windows)][(1)]]    *Common Arguments Specification*  [[elisp:(org-cycle)][| ]]  [[elisp:(org-show-subtree)][|=]]
+*  [[elisp:(beginning-of-buffer)][Top]] ############## [[elisp:(blee:ppmm:org-mode-toggle)][Nat]] [[elisp:(delete-other-windows)][(1)]]    *Class Definitions*  [[elisp:(org-cycle)][| ]]  [[elisp:(org-show-subtree)][|=]]
 """
 ####+END:
 
 
-####+BEGIN: bx:dblock:python:subSection :title "Class Definitions"
-
+####+BEGIN: bx:icm:python:func :funcName "obtainBpo" :funcType "anyOrNone" :retType "bool" :deco "" :argsList "bpoId"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Func-anyOrNone :: /obtainBpo/ retType=bool argsList=(bpoId)  [[elisp:(org-cycle)][| ]]
+"""
+def obtainBpo(
+    bpoId,
+):
 ####+END:
+    return bpo.EffectiveBpos.givenBpoIdObtainBpo(bpoId, AaisBpo)
 
 
 ####+BEGIN: bx:dblock:python:class :className "AaisBpo" :superClass "bpo.Bpo" :comment "Expected to be subclassed" :classType "basic"
@@ -434,11 +459,69 @@ class AaisBpo(bpo.Bpo):
 """
 
     def __init__(
-        self,
+            self,
+            bpoId,
     ):
-        self.live = AaisRepo_Live
+        '''Constructor'''
+        if bpo.EffectiveBpos.givenBpoIdGetBpoOrNone(bpoId):
+            icm.EH_critical_usageError(f"Duplicate Attempt At Singleton Creation bpoId={bpoId}")
+        else:
+            bpo.EffectiveBpos.addBpo(bpoId, self)
+
+        super().__init__(bpoId)
+
+        self.effectiveSisList = {}
+
+        self.basesObj = AaisBases(bpoId)
+        self.basesObj.aais_bases_update()
+
+        self.repo_live = AaisRepo_Live(bpoId)
+
+        self.sivdApache2Repo = A2SivdRepo(bpoId)
 
 
+        self.siGeneweb = {}
+        self.bpoId = bpoId
+
+    def activate(
+            self,
+            si,
+    ):
+        """When si is blank, activate the whole BPO. Otherwise just the specified bpo.
+
+        """
+        print(self.baseDir)
+        print(si)
+
+
+####+BEGIN: bx:dblock:python:class :className "AaisBases" :superClass "bpo.BpoBases" :comment "Expected to be subclassed" :classType "basic"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Class-basic :: /AaisBases/ bpo.BpoBases =Expected to be subclassed=  [[elisp:(org-cycle)][| ]]
+"""
+class AaisBases(bpo.BpoBases):
+####+END:
+    """
+** Abstraction of the base ByStar Portable Object
+"""
+    def __init__(
+            self,
+            bpoId,
+    ):
+        super().__init__(bpoId)
+        if not bpo.EffectiveBpos.givenBpoIdGetBpo(bpoId):
+            icm.EH_critical_usageError(f"Missing BPO for {bpoId}")
+            return
+
+    def aais_bases_update(self,):
+        """Extra aais bases."""
+        self.bases_update()
+        return
+
+    def logBase_update(self,):
+        return "NOTYET"
+
+    def logBase_obtain(self,):
+        return os.path.join(self.bpo.baseDir, "log") # type: ignore
 
 
 ####+BEGIN: bx:dblock:python:class :className "AaisRepo_Live" :superClass "bpo.BpoRepo" :comment "Expected to be subclassed" :classType "basic"
@@ -446,6 +529,163 @@ class AaisBpo(bpo.Bpo):
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Class-basic :: /AaisRepo_Live/ bpo.BpoRepo =Expected to be subclassed=  [[elisp:(org-cycle)][| ]]
 """
 class AaisRepo_Live(bpo.BpoRepo):
+####+END:
+    """
+** Abstraction of the base ByStar Portable Object
+"""
+    def __init__(
+            self,
+            bpoId,
+    ):
+        super().__init__(bpoId)
+        if not bpo.EffectiveBpos.givenBpoIdGetBpo(bpoId):
+            icm.EH_critical_usageError(f"Missing BPO for {bpoId}")
+            return
+
+    def info(self,):
+        print(f"AaisRepo_Live {self.bpo.bpoId}")
+
+    def obtainFromFPs(self,):
+        pass
+
+    def update(
+            self,
+            containerBpoId,
+            ipAddr
+    ):
+        self.containerBpoId = containerBpoId
+        self.ipAddr = ipAddr
+
+
+####+BEGIN: bx:dblock:python:class :className "AaSivdRepo" :superClass "bpo.BpoRepo" :comment "Expected to be subclassed" :classType "basic"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Class-basic :: /AaSivdRepo/ bpo.BpoRepo =Expected to be subclassed=  [[elisp:(org-cycle)][| ]]
+"""
+class A2SivdRepo(bpo.BpoRepo):
+####+END:
+    """
+** Refers to the entirety of bpo/apache2 repo.
+"""
+    def __init__(
+            self,
+            bpoId,
+    ):
+        super().__init__(bpoId)
+        if not bpo.EffectiveBpos.givenBpoIdGetBpo(bpoId):
+            icm.EH_critical_usageError(f"Missing BPO for {bpoId}")
+            return
+
+    def repoBase(self,):
+        return os.path.join(self.bpo.baseDir, "apache2") # type: ignore
+
+
+####+BEGIN: bx:dblock:python:class :className " A2SivdBase_Plone3" :superClass "object" :comment "Expected to be subclassed" :classType "basic"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Class-basic :: / A2SivdBase_Plone3/ object =Expected to be subclassed=  [[elisp:(org-cycle)][| ]]
+"""
+class  A2SivdBase_Plone3(object):
+####+END:
+    """
+** Abstraction of the base ByStar Portable Object
+"""
+    def __init__(
+            self,
+            bpoId,
+    ):
+        super().__init__(bpoId)
+        if not bpo.EffectiveBpos.givenBpoIdGetBpo(bpoId):
+            icm.EH_critical_usageError(f"Missing BPO for {bpoId}")
+            return
+
+
+####+BEGIN: bx:dblock:python:class :className "EffectiveSis" :superClass "object" :comment "" :classType "basic"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Class-basic :: /EffectiveSis/ object  [[elisp:(org-cycle)][| ]]
+"""
+class EffectiveSis(object):
+####+END:
+    """
+** Only one instance is created for a given BpoId and an SiId.
+"""
+
+    @staticmethod
+    def addSi(
+            bpoId,
+            siId,
+            siObj
+    ):
+        print(f"Adding bpoId={bpoId} siId={siId} siObj={siObj}")
+        thisBpo = obtainBpo(bpoId,)
+        if not thisBpo:
+            return None
+        thisBpo.effectiveSisList.update({siId: siObj})
+
+
+    @staticmethod
+    def givenSiIdObtainSiObj(
+            bpoId,
+            siId,
+            SiClass,
+    ):
+        """Returns and siObj."""
+        thisBpo = obtainBpo(bpoId,)
+        if not thisBpo:
+            return None
+
+        if siId in thisBpo.effectiveSisList:
+            return thisBpo.effectiveSisList[siId]
+        else:
+            return SiClass(siId, siId)
+
+    @staticmethod
+    def givenSiIdFindSiObj(
+            bpoId,
+            siId,
+    ):
+        """Should really not fail."""
+        thisBpo = obtainBpo(bpoId,)
+        if not thisBpo:
+            return None
+
+        if siId in thisBpo.effectiveSisList:
+            return thisBpo.effectiveSisList[siId]
+        else:
+            icm.EH_problem_usageError("")
+            return None
+
+    @staticmethod
+    def givenSiIdGetSiObjOrNone(
+            bpoId,
+            siId,
+    ):
+        """Expected to perhaps fail."""
+        thisBpo = obtainBpo(bpoId,)
+        if not thisBpo:
+            return None
+
+        if siId in thisBpo.effectiveSisList:
+            return thisBpo.effectiveSisList[siId]
+        else:
+            return None
+
+
+####+BEGIN: bx:icm:python:func :funcName "obtainBpo" :funcType "anyOrNone" :retType "bool" :deco "" :argsList "bpoId"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Func-anyOrNone :: /obtainBpo/ retType=bool argsList=(bpoId)  [[elisp:(org-cycle)][| ]]
+"""
+def obtainSiObj(
+        bpoId,
+        siId,
+):
+####+END:
+    return EffectiveBpos.givenSiIdObtainSiObj(bpoId, siId, siObj)
+
+
+####+BEGIN: bx:dblock:python:class :className "AaSiRepo" :superClass "bpo.BpoRepo" :comment "Expected to be subclassed" :classType "basic"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Class-basic :: /AaSiRepo/ bpo.BpoRepo =Expected to be subclassed=  [[elisp:(org-cycle)][| ]]
+"""
+class SiRepo(bpo.BpoRepo):
 ####+END:
     """
 ** Abstraction of the base ByStar Portable Object
@@ -459,13 +699,6 @@ class AaisRepo_Live(bpo.BpoRepo):
     def obtainFromFPs(self,):
         pass
 
-    def update(
-            self,
-            containerBpoId,
-            ipAddr
-    ):
-        self.containerBpoId = containerBpoId
-        self.ipAddr = ipAddr
 
 
 
@@ -514,16 +747,16 @@ def examples_aaBpo_basicAccess():
 """
     def cpsInit(): return collections.OrderedDict()
     def menuItem(verbosity): icm.ex_gCmndMenuItem(cmndName, cps, cmndArgs, verbosity=verbosity) # 'little' or 'none'
-    def execLineEx(cmndStr): icm.ex_gExecMenuItem(execLine=cmndStr)
+    # def execLineEx(cmndStr): icm.ex_gExecMenuItem(execLine=cmndStr)
 
     oneBpo = "pmi_ByD-100001"
     oneSiRelPath = "plone3/main"
 
-    def moduleOverviewMenuItem(overviewCmndName):
-        icm.cmndExampleMenuChapter('* =Module=  Overview (desc, usage, status)')
-        cmndName = "overview_bxpBaseDir" ; cmndArgs = "moduleDescription moduleUsage moduleStatus" ;
-        cps = collections.OrderedDict()
-        icm.ex_gCmndMenuItem(cmndName, cps, cmndArgs, verbosity='none') # 'little' or 'none'
+    # def moduleOverviewMenuItem(overviewCmndName):
+    #     icm.cmndExampleMenuChapter('* =Module=  Overview (desc, usage, status)')
+    #     cmndName = "overview_bxpBaseDir" ; cmndArgs = "moduleDescription moduleUsage moduleStatus" ;
+    #     cps = collections.OrderedDict()
+    #     icm.ex_gCmndMenuItem(cmndName, cps, cmndArgs, verbosity='none') # 'little' or 'none'
 
     # moduleOverviewMenuItem(bpo_libOverview)
 
@@ -643,7 +876,7 @@ class bpoSiRunRootBaseDir(icm.Cmnd):
             return cmndOutcome
 ####+END:
 
-        cmndArgs = self.cmndArgsGet("0&2", cmndArgsSpecDict, effectiveArgsList)
+        cmndArgs = list(self.cmndArgsGet("0&2", cmndArgsSpecDict, effectiveArgsList)) # type: ignore
 
         if len(cmndArgs):
             if cmndArgs[0] == "all":
