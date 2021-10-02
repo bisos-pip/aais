@@ -213,7 +213,7 @@ class examples(icm.Cmnd):
             menuItem(verbosity='none')
 
         def listOfSvcs():
-            virDomSvcs = listOfA2VirDomSvcs()
+            virDomSvcs = listOfA2VirDomTypes()
             for each in virDomSvcs:
                 oneSvcExample(each)
 
@@ -303,6 +303,7 @@ class svcExamples(icm.Cmnd):
         cmndName = "aaisBpoInfo" ; cmndArgs = "notyet" ;
         cps=cpsInit() ; cps['bpoId'] = oneBpo ; cps['si'] = oneSiRelPath
         menuItem(verbosity='none')
+        menuItem(verbosity='full')
 
         # ${G_myName} ${extraInfo} -p bxoId="${oneBystarAcct}" -p ss=${oneSr} -p dbase=banan -i imagesList | bueGimpManage.sh -h -v -n showRun -i scaleReplaceHeightTo 200
         # $( examplesSeperatorChapter "Access, Verification And Test" )
@@ -553,6 +554,8 @@ class aaisBpoInfo(icm.Cmnd):
 
         thisBpo = aaisBpo.obtainBpo(bpoId,)
 
+        print("AAA")
+
         print(thisBpo.__dict__)
 
         thisBpo.activate("apache2/plone3/main")
@@ -565,6 +568,20 @@ class aaisBpoInfo(icm.Cmnd):
         thisBpo.repo_bxeTree.info()
 
         thisBpo.repo_live.info()
+
+        # a2VirDomProvider = aaisBpo.obtainSiObj(thisBpo, "apache2")
+
+        print(aaisBpo.svcProv_virDom_list())
+        print(aaisBpo.svcProv_prim_list())
+
+        thisBpo.sisDigest()
+
+        siPath = aaisBpo.siIdToSiPath(bpoId, si)
+
+        thisSi = aaisBpo.EffectiveSis.givenSiPathFindSiObj(bpoId, siPath,)
+        print(thisSi.setMyVar)
+
+        print(thisBpo.effectiveSisList)
 
         return cmndOutcome.set(
             opError=icm.OpError.Success,  # type: ignore
@@ -858,11 +875,128 @@ class dbaseInitialContentStdout(icm.Cmnd):
 """
 
 
-####+BEGIN: bx:dblock:python:class :className "AaSivdRepo_Apache2" :superClass "bpo.AaSivdRepo" :comment "Expected to be subclassed" :classType "basic"
+####+BEGIN: bx:dblock:python:section :title "Class Definitions"
 """
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Class-basic :: /AaSivdRepo_Apache2/ bpo.AaSivdRepo =Expected to be subclassed=  [[elisp:(org-cycle)][| ]]
+*  [[elisp:(beginning-of-buffer)][Top]] ############## [[elisp:(blee:ppmm:org-mode-toggle)][Nat]] [[elisp:(delete-other-windows)][(1)]]    *Class Definitions*  [[elisp:(org-cycle)][| ]]  [[elisp:(org-show-subtree)][|=]]
 """
-class AaSivdRepo_Apache2(aaisBpo.SivdRepo):
+####+END:
+
+####+BEGIN: bx:dblock:python:class :className "A2SivdRepo" :superClass "bpo.BpoRepo" :comment "Expected to be subclassed" :classType "basic"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Class-basic :: /A2SivdRepo/ bpo.BpoRepo =Expected to be subclassed=  [[elisp:(org-cycle)][| ]]
+"""
+class A2SivdRepo(bpo.BpoRepo):
+####+END:
+    """
+** Refers to the entirety of bpo/apache2 repo.
+"""
+    def __init__(
+            self,
+            bpoId,
+    ):
+        super().__init__(bpoId)
+        if not bpo.EffectiveBpos.givenBpoIdGetBpo(bpoId):
+            icm.EH_critical_usageError(f"Missing BPO for {bpoId}")
+            return
+
+    def repoBase(self,):
+        return os.path.join(self.bpo.baseDir, "apache2") # type: ignore
+
+
+####+BEGIN: bx:dblock:python:class :className "obsoletedA2SivdBase_Plone3" :superClass "object" :comment "Expected to be subclassed" :classType "basic"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Class-basic :: /obsoletedA2SivdBase_Plone3/ object =Expected to be subclassed=  [[elisp:(org-cycle)][| ]]
+"""
+class obsoletedA2SivdBase_Plone3(object):
+####+END:
+    """
+** Abstraction of the base ByStar Portable Object
+"""
+    def __init__(
+            self,
+            bpoId,
+    ):
+        # super().__init__(bpoId)
+        if not bpo.EffectiveBpos.givenBpoIdGetBpo(bpoId):
+            icm.EH_critical_usageError(f"Missing BPO for {bpoId}")
+            return
+
+
+####+BEGIN: bx:dblock:python:class :className "AaSivdRepo_Apache2" :superClass "aaisBpo.SiRepo" :comment "Expected to be subclassed" :classType "basic"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Class-basic :: /AaSivdRepo_Apache2/ aaisBpo.SiRepo =Expected to be subclassed=  [[elisp:(org-cycle)][| ]]
+"""
+class AaSivdRepo_Apache2(aaisBpo.SiRepo):
+####+END:
+    """
+** Abstraction of the base ByStar Portable Object
+"""
+    def __init__(
+            self,
+            bpoId,
+            siPath,
+    ):
+        print("eee  AaSivdRepo_Apache2")
+        if aaisBpo.EffectiveSis. givenSiPathGetSiObjOrNone(bpoId, siPath,):
+            icm.EH_critical_usageError(f"Duplicate Attempt At Singleton Creation bpoId={bpoId}, siPath={siPath}")
+        else:
+            super().__init__(bpoId, siPath,) # includes: EffectiveSis.addSi(bpoId, siPath, self,)
+
+
+    def obtainFromFPs(self,):
+        pass
+
+
+####+BEGIN: bx:dblock:python:class :className "A2_Svc_Type" :superClass "aaisBpo.SiVirDomSvcType" :comment "Expected to be subclassed" :classType "basic"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Class-basic :: /A2_Svc_Type/ aaisBpo.SiVirDomSvcType =Expected to be subclassed=  [[elisp:(org-cycle)][| ]]
+"""
+class A2_Svc_Type(aaisBpo.SiVirDomSvcType):
+####+END:
+    """
+** Abstraction of the base ByStar Portable Object
+"""
+    def __init__(
+            self,
+            bpoId,
+            siPath,
+    ):
+        print("fff  A2_Svc_Type")
+        if aaisBpo.EffectiveSis. givenSiPathGetSiObjOrNone(bpoId, siPath,):
+            icm.EH_critical_usageError(f"Duplicate Attempt At Singleton Creation bpoId={bpoId}, siPath={siPath}")
+        else:
+            super().__init__(bpoId, siPath,) # includes: EffectiveSis.addSi(bpoId, siPath, self,)
+
+
+####+BEGIN: bx:dblock:python:class :className "A2_Svc_Inst" :superClass "aaisBpo.SiSvcInst" :comment "Expected to be subclassed" :classType "basic"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Class-basic :: /A2_Svc_Inst/ aaisBpo.SiSvcInst =Expected to be subclassed=  [[elisp:(org-cycle)][| ]]
+"""
+class A2_Svc_Inst(aaisBpo.SiSvcInst):
+####+END:
+    """
+** Abstraction of the base ByStar Portable Object
+"""
+    def __init__(
+            self,
+            bpoId,
+            siPath,
+    ):
+        print("ggg  A2_Svc_Inst")
+        if aaisBpo.EffectiveSis. givenSiPathGetSiObjOrNone(bpoId, siPath,):
+            icm.EH_critical_usageError(f"Duplicate Attempt At Singleton Creation bpoId={bpoId}, siPath={siPath}")
+        else:
+            super().__init__(bpoId, siPath,) # includes: EffectiveSis.addSi(bpoId, siPath, self,)
+
+    def obtainFromFPs(self,):
+        pass
+
+
+####+BEGIN: bx:dblock:python:class :className "A2_Plone3_Type" :superClass "A2_Svc_Type" :comment "Expected to be subclassed" :classType "basic"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Class-basic :: /A2_Plone3_Type/ A2_Svc_Type =Expected to be subclassed=  [[elisp:(org-cycle)][| ]]
+"""
+class A2_Plone3_Type(A2_Svc_Type):
 ####+END:
     """
 ** Abstraction of the base ByStar Portable Object
@@ -870,37 +1004,66 @@ class AaSivdRepo_Apache2(aaisBpo.SivdRepo):
 
     def __init__(
         self,
+            bpoId,
+            siPath,
     ):
-        pass
+        print("hhh  A2_Plone3_Type")
+        if aaisBpo.EffectiveSis. givenSiPathGetSiObjOrNone(bpoId, siPath,):
+            icm.EH_critical_usageError(f"Duplicate Attempt At Singleton Creation bpoId={bpoId}, siPath={siPath}")
+        else:
+            super().__init__(bpoId, siPath,) # includes: EffectiveSis.addSi(bpoId, siPath, self,)
+
 
     def obtainFromFPs(self,):
         pass
 
+    def domainShow(self,):
+        pass
 
-####+BEGIN: bx:dblock:python:class :className "Apache2_SvcInstance" :superClass "object" :comment "Expected to be subclassed" :classType "basic"
+    def stdout(self,):
+        pass
+
+
+####+BEGIN: bx:dblock:python:class :className "A2_Plone3_Inst" :superClass "A2_Svc_Inst" :comment "Expected to be subclassed" :classType "basic"
 """
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Class-basic :: /Apache2_SvcInstance/ object =Expected to be subclassed=  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Class-basic :: /A2_Plone3_Inst/ A2_Svc_Inst =Expected to be subclassed=  [[elisp:(org-cycle)][| ]]
 """
-class Apache2_SvcInstance(object):
+class A2_Plone3_Inst(A2_Svc_Inst):
 ####+END:
     """
 ** Abstraction of the base ByStar Portable Object
 """
-
     def __init__(
         self,
+            bpoId,
+            siPath,
     ):
-        pass
+        print("iii  A2_Plone3_Inst")
+        if aaisBpo.EffectiveSis. givenSiPathGetSiObjOrNone(bpoId, siPath,):
+            icm.EH_critical_usageError(f"Duplicate Attempt At Singleton Creation bpoId={bpoId}, siPath={siPath}")
+        else:
+            super().__init__(bpoId, siPath,) # includes: EffectiveSis.addSi(bpoId, siPath, self,)
 
     def obtainFromFPs(self,):
         pass
 
+    def setVar(self, value,):
+        self.setMyVar = value
 
-####+BEGIN: bx:dblock:python:class :className "A2_Plone3_VirDom" :superClass "Apache2_SvcInstance" :comment "Expected to be subclassed" :classType "basic"
+    def domainShow(self,):
+        pass
+
+    def stdout(self,):
+        pass
+
+
+
+
+####+BEGIN: bx:dblock:python:class :className "A2_Geneweb_VirDom" :superClass "A2_Svc_Type" :comment "Expected to be subclassed" :classType "basic"
 """
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Class-basic :: /A2_Plone3_VirDom/ Apache2_SvcInstance =Expected to be subclassed=  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Class-basic :: /A2_Geneweb_VirDom/ A2_Svc_Type =Expected to be subclassed=  [[elisp:(org-cycle)][| ]]
 """
-class A2_Plone3_VirDom(Apache2_SvcInstance):
+class A2_Geneweb_VirDom(A2_Svc_Type):
 ####+END:
     """
 ** Abstraction of the base ByStar Portable Object
@@ -919,32 +1082,6 @@ class A2_Plone3_VirDom(Apache2_SvcInstance):
 
     def stdout(self,):
         pass
-
-
-####+BEGIN: bx:dblock:python:class :className "A2_Geneweb_VirDom" :superClass "Apache2_SvcInstance" :comment "Expected to be subclassed" :classType "basic"
-"""
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Class-basic :: /A2_Geneweb_VirDom/ Apache2_SvcInstance =Expected to be subclassed=  [[elisp:(org-cycle)][| ]]
-"""
-class A2_Geneweb_VirDom(Apache2_SvcInstance):
-####+END:
-    """
-** Abstraction of the base ByStar Portable Object
-"""
-
-    def __init__(
-        self,
-    ):
-        pass
-
-    def obtainFromFPs(self,):
-        pass
-
-    def domainShow(self,):
-        pass
-
-    def stdout(self,):
-        pass
-
 
 
 
@@ -955,24 +1092,94 @@ class A2_Geneweb_VirDom(Apache2_SvcInstance):
 ####+END:
 
 
-####+BEGINNOT: bx:icm:python:func :funcName "listOfA2VirDomSvcs" :funcType "anyOrNone" :retType "List" :deco "" :argsList ""
+####+BEGINNOT: bx:icm:python:func :funcName "listOfA2VirDomTypes" :funcType "anyOrNone" :retType "List" :deco "" :argsList ""
 """
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Func-anyOrNone :: /listOfA2VirDomSvcs/ retType=bool argsList=nil  [[elisp:(org-cycle)][| ]]
 """
-def listOfA2VirDomSvcs() -> typing.List:
+def listOfA2VirDomTypes() -> typing.List:
 ####+END:
     return (
         [
-            'plone3/main',
-            'geneweb/main',
-            'squirrelmail/main',
-            'django/main',
-            'gitweb/main',
-            'gitolite/main',
-            'gallery/main',
-            'www/main',
+            'plone3',
+            'geneweb',
+            'squirrelmail',
+            'django',
+            'gitweb',
+            'gitolite',
+            'gallery',
+            'www',
         ]
     )
+
+
+####+BEGIN: bx:icm:python:func :funcName "digestAtVirDomSvcProv" :funcType "anyOrNone" :retType "" :deco "" :argsList "bpoId siRepoBase"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Func-anyOrNone :: /digestAtVirDomSvcProv/ retType= argsList=(bpoId siRepoBase)  [[elisp:(org-cycle)][| ]]
+"""
+def digestAtVirDomSvcProv(
+    bpoId,
+    siRepoBase,
+):
+####+END:
+    icm.TM_here("Incomplete")
+    aaisBpo.createSiObj(bpoId, siRepoBase, AaSivdRepo_Apache2)
+
+    # thisBpo = aaisBpo.obtainBpo(bpoId,)
+
+    for each in listOfA2VirDomTypes():
+            siRepoPath = os.path.join(siRepoBase, each)
+            if os.path.isdir(siRepoPath):
+                if each == "plone3":
+                    plone3SvcTypeObj = aaisBpo.createSiObj(bpoId, siRepoPath, A2_Plone3_Type)
+                    digestAtVirDomSvcType(bpoId, siRepoPath, plone3SvcTypeObj)
+                print(f"is {siRepoPath}")
+            else:
+                print(f"is NOT {siRepoPath} -- skipped")
+
+
+####+BEGIN: bx:icm:python:func :funcName "digestAtVirDomSvcType" :funcType "anyOrNone" :retType "" :deco "" :argsList "bpoId siRepoBase svcType"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Func-anyOrNone :: /digestAtVirDomSvcType/ retType= argsList=(bpoId siRepoBase svcType)  [[elisp:(org-cycle)][| ]]
+"""
+def digestAtVirDomSvcType(
+    bpoId,
+    siRepoBase,
+    svcTypeObj,
+):
+####+END:
+    icm.TM_here("Incomplete")
+    aaisBpo.createSiObj(bpoId, siRepoBase, AaSivdRepo_Apache2)
+
+    # thisBpo = aaisBpo.obtainBpo(bpoId,)
+
+    for (_, dirNames, _,) in os.walk(siRepoBase):
+        for each in dirNames:
+            if each == "siInfo":
+                continue
+            # verify that it is a svcInstance
+            siRepoPath = os.path.join(siRepoBase, each)
+            digestVirDomSvcInstance(bpoId, siRepoPath, svcTypeObj, each)
+        break
+
+
+####+BEGIN: bx:icm:python:func :funcName "digestVirDomSvcInstance" :funcType "anyOrNone" :retType "" :deco "" :argsList "bpoId siRepoBase svcTypeObj instanceName"
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Func-anyOrNone :: /digestVirDomSvcInstance/ retType= argsList=(bpoId siRepoBase svcTypeObj instanceName)  [[elisp:(org-cycle)][| ]]
+"""
+def digestVirDomSvcInstance(
+    bpoId,
+    siRepoBase,
+    svcTypeObj,
+    instanceName,
+):
+####+END:
+    icm.TM_here("Incomplete")
+
+    thisSi = aaisBpo.createSiObj(bpoId, siRepoBase, A2_Plone3_Inst)
+
+    thisSi.setVar(22)
+
+    icm.TM_here(f"bpoId={bpoId}, siRepoBase={siRepoBase}, svcTypeObj={svcTypeObj} instanceName={instanceName}")
 
 
 ####+BEGIN: bx:icm:python:section :title "Supporting Classes And Functions"
