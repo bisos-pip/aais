@@ -94,6 +94,10 @@ import os
 # import grp
 import collections
 # import enum
+#
+
+#import traceback
+
 
 ####+BEGIN: bx:dblock:global:file-insert-cond :cond "./blee.el" :file "/bisos/apps/defaults/update/sw/icm/py/importUcfIcmG.py"
 from unisos import ucf
@@ -463,7 +467,7 @@ class AaisBpo(bpo.Bpo):
             bpoId,
     ):
         '''Constructor'''
-        print("ddd AaisBpo")
+        #print("ddd AaisBpo")
         if bpo.EffectiveBpos.givenBpoIdGetBpoOrNone(bpoId):
             icm.EH_critical_usageError(f"Duplicate Attempt At Singleton Creation bpoId={bpoId}")
         else:
@@ -500,17 +504,17 @@ class AaisBpo(bpo.Bpo):
             siRepoPath = os.path.join(self.baseDir, "si_{each}".format(each=each))
             if os.path.isdir(siRepoPath):
                 sis_virDom_digest(self.bpoId, each, siRepoPath)
-                print(f"is {siRepoPath}")
+                icm.TM_here(f"is {siRepoPath}")
             else:
-                print(f"is NOT {siRepoPath} -- skipped")
+                icm.TM_here(f"is NOT {siRepoPath} -- skipped")
 
         for each in svcProv_prim_list():
             siRepoPath = os.path.join(self.baseDir, "si_{each}".format(each=each))
             if os.path.isdir(siRepoPath):
                 sis_prim_digest(self.bpoId, each, siRepoPath)
-                print(f"is {siRepoPath}")
+                icm.TM_here(f"is {siRepoPath}")
             else:
-                print(f"is NOT {siRepoPath} -- skipped")
+                icm.TM_here(f"is NOT {siRepoPath} -- skipped")
 
 
 ####+BEGIN: bx:dblock:python:class :className "AaisBases" :superClass "bpo.BpoBases" :comment "Expected to be subclassed" :classType "basic"
@@ -593,7 +597,7 @@ class EffectiveSis(object):
             siPath,
             siObj
     ):
-        print(f"ZZZZZZ Adding bpoId={bpoId} siPath={siPath} siObj={siObj}")
+        icm.TM_here(f"Adding bpoId={bpoId} siPath={siPath} siObj={siObj}")
         thisBpo = obtainBpo(bpoId,)
         if not thisBpo:
             return None
@@ -612,7 +616,9 @@ class EffectiveSis(object):
             return None
 
         if siPath in thisBpo.effectiveSisList:
-            icm.EH_problem_usageError("")
+            icm.EH_problem_usageError(f"bpoId={bpoId} -- siPath={siPath} -- SiClass={SiClass}")
+            icm.EH_problem_usageError(siPath)
+            icm.EH_critical_oops("")
             return thisBpo.effectiveSisList[siPath]
         else:
             return SiClass(bpoId, siPath) # results in addSi()

@@ -936,7 +936,7 @@ class AaSivdRepo_Apache2(aaisBpo.SiRepo):
             bpoId,
             siPath,
     ):
-        print("eee  AaSivdRepo_Apache2")
+        # print("eee  AaSivdRepo_Apache2")
         if aaisBpo.EffectiveSis. givenSiPathGetSiObjOrNone(bpoId, siPath,):
             icm.EH_critical_usageError(f"Duplicate Attempt At Singleton Creation bpoId={bpoId}, siPath={siPath}")
         else:
@@ -961,7 +961,7 @@ class A2_Svc_Type(aaisBpo.SiVirDomSvcType):
             bpoId,
             siPath,
     ):
-        print("fff  A2_Svc_Type")
+        # print("fff  A2_Svc_Type")
         if aaisBpo.EffectiveSis. givenSiPathGetSiObjOrNone(bpoId, siPath,):
             icm.EH_critical_usageError(f"Duplicate Attempt At Singleton Creation bpoId={bpoId}, siPath={siPath}")
         else:
@@ -982,7 +982,7 @@ class A2_Svc_Inst(aaisBpo.SiSvcInst):
             bpoId,
             siPath,
     ):
-        print("ggg  A2_Svc_Inst")
+        # print("ggg  A2_Svc_Inst")
         if aaisBpo.EffectiveSis. givenSiPathGetSiObjOrNone(bpoId, siPath,):
             icm.EH_critical_usageError(f"Duplicate Attempt At Singleton Creation bpoId={bpoId}, siPath={siPath}")
         else:
@@ -1007,7 +1007,7 @@ class A2_Plone3_Type(A2_Svc_Type):
             bpoId,
             siPath,
     ):
-        print("hhh  A2_Plone3_Type")
+        # print("hhh  A2_Plone3_Type")
         if aaisBpo.EffectiveSis. givenSiPathGetSiObjOrNone(bpoId, siPath,):
             icm.EH_critical_usageError(f"Duplicate Attempt At Singleton Creation bpoId={bpoId}, siPath={siPath}")
         else:
@@ -1038,7 +1038,7 @@ class A2_Plone3_Inst(A2_Svc_Inst):
             bpoId,
             siPath,
     ):
-        print("iii  A2_Plone3_Inst")
+        # print("iii  A2_Plone3_Inst")
         if aaisBpo.EffectiveSis. givenSiPathGetSiObjOrNone(bpoId, siPath,):
             icm.EH_critical_usageError(f"Duplicate Attempt At Singleton Creation bpoId={bpoId}, siPath={siPath}")
         else:
@@ -1132,9 +1132,9 @@ def digestAtVirDomSvcProv(
                 if each == "plone3":
                     plone3SvcTypeObj = aaisBpo.createSiObj(bpoId, siRepoPath, A2_Plone3_Type)
                     digestAtVirDomSvcType(bpoId, siRepoPath, plone3SvcTypeObj)
-                print(f"is {siRepoPath}")
+                icm.TM_here(f"is {siRepoPath}")
             else:
-                print(f"is NOT {siRepoPath} -- skipped")
+                icm.TM_here(f"is NOT {siRepoPath} -- skipped")
 
 
 ####+BEGIN: bx:icm:python:func :funcName "digestAtVirDomSvcType" :funcType "anyOrNone" :retType "" :deco "" :argsList "bpoId siRepoBase svcType"
@@ -1148,7 +1148,8 @@ def digestAtVirDomSvcType(
 ):
 ####+END:
     icm.TM_here("Incomplete")
-    aaisBpo.createSiObj(bpoId, siRepoBase, AaSivdRepo_Apache2)
+
+    #aaisBpo.createSiObj(bpoId, siRepoBase, AaSivdRepo_Apache2) # BAD USAGE
 
     # thisBpo = aaisBpo.obtainBpo(bpoId,)
 

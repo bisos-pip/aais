@@ -239,6 +239,11 @@ class examples(icm.Cmnd):
         cps=cpsInit() ; cps['bpoId'] = oneBpo ; cps['si'] = oneSiRelPath ; cps['method'] = 'ploneSiteAdd'
         menuItem(verbosity='little')
 
+        cmndName = "siToBxBash" ; cmndArgs = "" ;
+        cps=cpsInit() ; cps['bpoId'] = oneBpo ; cps['si'] = oneSiRelPath
+        menuItem(verbosity='little')
+
+
         cmndName = "aaisBpoInfo" ; cmndArgs = "notyet" ;
         cps=cpsInit() ; cps['bpoId'] = oneBpo ; cps['si'] = oneSiRelPath
         menuItem(verbosity='none')
@@ -446,8 +451,6 @@ class siBaseUpdate(icm.Cmnd):
 ***** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  Creates bases.
 """
 
-
-
 ####+BEGIN: bx:icm:python:cmnd:classHead :cmndName "siInvoke" :comment "" :parsMand "bpoId si method" :parsOpt "" :argsMin "0" :argsMax "0" :asFunc "" :interactiveP ""
 """
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  ICM-Cmnd   :: /siInvoke/ parsMand=bpoId si method parsOpt= argsMin=0 argsMax=0 asFunc= interactive=  [[elisp:(org-cycle)][| ]]
@@ -504,6 +507,61 @@ class siInvoke(icm.Cmnd):
         return """
 ***** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  Description
 """
+
+
+####+BEGIN: bx:icm:python:cmnd:classHead :cmndName "siToBxBash" :comment "" :parsMand "bpoId si" :parsOpt "" :argsMin "0" :argsMax "0" :asFunc "" :interactiveP ""
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  ICM-Cmnd   :: /siToBxBash/ parsMand=bpoId si parsOpt= argsMin=0 argsMax=0 asFunc= interactive=  [[elisp:(org-cycle)][| ]]
+"""
+class siToBxBash(icm.Cmnd):
+    cmndParamsMandatory = [ 'bpoId', 'si', ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 0, 'Max': 0,}
+
+    @icm.subjectToTracking(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+        interactive=False,        # Can also be called non-interactively
+        bpoId=None,         # or Cmnd-Input
+        si=None,         # or Cmnd-Input
+    ):
+        cmndOutcome = self.getOpOutcome()
+        if interactive:
+            if not self.cmndLineValidate(outcome=cmndOutcome):
+                return cmndOutcome
+
+        callParamsDict = {'bpoId': bpoId, 'si': si, }
+        if not icm.cmndCallParamsValidate(callParamsDict, interactive, outcome=cmndOutcome):
+            return cmndOutcome
+        bpoId = callParamsDict['bpoId']
+        si = callParamsDict['si']
+
+####+END:
+        thisBpo = aaisBpo.obtainBpo(bpoId,)
+        thisBpo.sisDigest()
+
+        siPath = aaisBpo.siIdToSiPath(bpoId, si)
+        thisSi = aaisBpo.EffectiveSis.givenSiPathFindSiObj(bpoId, siPath,)
+        if not thisSi:
+            return cmndOutcome.set(opError=icm.EH_critical_usageError(f"missing thisSi={thisSi}"))
+
+        thisSi.siToBxBash()
+
+        return cmndOutcome.set(
+            opError=icm.OpError.Success,  # type: ignore
+            opResults=None,
+        )
+
+####+BEGIN: bx:icm:python:method :methodName "cmndDocStr" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList ""
+    """
+**  [[elisp:(org-cycle)][| ]] [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(bx:orgm:indirectBufOther)][|>]] [[elisp:(bx:orgm:indirectBufMain)][|I]] [[elisp:(blee:ppmm:org-mode-toggle)][|N]] [[elisp:(org-top-overview)][|O]] [[elisp:(progn (org-shifttab) (org-content))][|C]] [[elisp:(delete-other-windows)][|1]]  Method-anyOrNone :: /cmndDocStr/ retType=bool argsList=nil deco=default  [[elisp:(org-cycle)][| ]]
+"""
+    @icm.subjectToTracking(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmndDocStr(self):
+####+END:
+        return """
+***** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  Description
+"""
+
 
 
 ####+BEGIN: bx:icm:python:cmnd:classHead :cmndName "aaisBpoInfo" :comment "" :parsMand "bpoId si" :parsOpt "" :argsMin "1" :argsMax "1" :asFunc "" :interactiveP ""
@@ -626,7 +684,7 @@ class SiRepo_Plone3(aaisBpo.SiRepo):
             bpoId,
             siPath,
     ):
-        print("eee  SiRepo_Plone3")
+        # print("eee  SiRepo_Plone3")
         if aaisBpo.EffectiveSis. givenSiPathGetSiObjOrNone(bpoId, siPath,):
             icm.EH_critical_usageError(f"Duplicate Attempt At Singleton Creation bpoId={bpoId}, siPath={siPath}")
         else:
@@ -651,7 +709,7 @@ class Plone3_Inst(aaisBpo.SiSvcInst):
             bpoId,
             siPath,
     ):
-        print("iii  Plone3_Inst")
+        # print("iii  Plone3_Inst")
         if aaisBpo.EffectiveSis. givenSiPathGetSiObjOrNone(bpoId, siPath,):
             icm.EH_critical_usageError(f"Duplicate Attempt At Singleton Creation bpoId={bpoId}, siPath={siPath}")
         else:
@@ -694,6 +752,16 @@ class Plone3_Inst(aaisBpo.SiSvcInst):
         self.invContext.run(
             """echo bystarPlone3Commands.sh ${G_commandOptions} -p bystarUid="${bystarUid}" -i ploneSiteAdd"""
         )
+
+    def siToBxBash(self,):
+        print(f"""\
+cp_acctPrefix=""
+cp_acctNu="{self.bpo.bpoId}"
+bpoIdPasswdDecrypted="NOTYET"
+bystarDomFormTld_plone="NOTYET"
+cp_acctMainBaseDomain="NOTYET"
+cp_acctUid="NOTYET"
+        """)
 
 
 
