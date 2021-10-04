@@ -6,14 +6,14 @@
 
 import typing
 
-icmInfo: typing.Dict[str, typing.Any] = { 'moduleDescription': ["""
+icmInfo: typing.Dict[str, typing.Any] = { 'moduleDescription': """
 *       [[elisp:(org-show-subtree)][|=]]  [[elisp:(org-cycle)][| *Description:* | ]]
 **  [[elisp:(org-cycle)][| ]]  [Xref]          :: *[Related/Xrefs:]*  <<Xref-Here->>  -- External Documents  [[elisp:(org-cycle)][| ]]
 
 **  [[elisp:(org-cycle)][| ]]   Model and Terminology                                      :Overview:
 *** concept             -- Description of concept
 **      [End-Of-Description]
-"""], }
+""", }
 
 icmInfo['moduleUsage'] = """
 *       [[elisp:(org-show-subtree)][|=]]  [[elisp:(org-cycle)][| *Usage:* | ]]
@@ -110,7 +110,7 @@ from blee.icmPlayer import bleep
 ####+END:
 
 from bisos.bpo import bpo
-from bisos.aais import aaisBpo
+from bisos.aais import aalsBpo as aaisBpo
 
 g_importedCmndsModules = [       # Enumerate modules from which CMNDs become invokable
     'blee.icmPlayer.bleep',
@@ -717,6 +717,7 @@ class Plone3_Inst(aaisBpo.SiSvcInst):
 
         self.bpo = aaisBpo.obtainBpo(bpoId,)
         self.siPath = siPath
+        self.siId = aaisBpo.siPathToSiId(bpoId, siPath,)
         self.invContext = invoke.context.Context(config=None)
 
     def obtainFromFPs(self,):
@@ -750,7 +751,7 @@ class Plone3_Inst(aaisBpo.SiSvcInst):
 
     def ploneSiteAdd(self,):
         self.invContext.run(
-            """echo bystarPlone3Commands.sh ${G_commandOptions} -p bystarUid="${bystarUid}" -i ploneSiteAdd"""
+            f"""aaSiPlone3Commands.sh -p bpoId="{self.bpo.bpoId}" -p si="{self.siId}" -i ploneSiteAdd"""
         )
 
     def siToBxBash(self,):
@@ -762,8 +763,6 @@ bystarDomFormTld_plone="NOTYET"
 cp_acctMainBaseDomain="NOTYET"
 cp_acctUid="NOTYET"
         """)
-
-
 
 ####+BEGIN: bx:icm:python:func :funcName "digestAtSvcProv" :funcType "anyOrNone" :retType "" :deco "" :argsList "bpoId siRepoBase"
 """
