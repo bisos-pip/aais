@@ -6,6 +6,8 @@
 
 import typing
 
+from unisos.icm.icm import EH_problem_usageError
+
 icmInfo: typing.Dict[str, typing.Any] = { 'moduleDescription': ["""
 *       [[elisp:(org-show-subtree)][|=]]  [[elisp:(org-cycle)][| *Description:* | ]]
 **  [[elisp:(org-cycle)][| ]]  [Xref]          :: *[Related/Xrefs:]*  <<Xref-Here->>  -- External Documents  [[elisp:(org-cycle)][| ]]
@@ -115,7 +117,7 @@ G = icm.IcmGlobalContext()
 from blee.icmPlayer import bleep
 ####+END:
 
-from bisos.platform import bxPlatformConfig
+# from bisos.platform import bxPlatformConfig
 # from bisos.platform import bxPlatformThis
 
 from bisos.bpo import bpo
@@ -188,9 +190,9 @@ class examples(icm.Cmnd):
             return cmndOutcome
 
 ####+END:
-        def cpsInit(): return collections.OrderedDict()
-        def menuItem(): icm.ex_gCmndMenuItem(cmndName, cps, cmndArgs, verbosity='little')
-        def execLineEx(cmndStr): icm.ex_gExecMenuItem(execLine=cmndStr)
+        #def cpsInit(): return collections.OrderedDict()
+        #def menuItem(): icm.ex_gCmndMenuItem(cmndName, cps, cmndArgs, verbosity='little')
+        #def execLineEx(cmndStr): icm.ex_gExecMenuItem(execLine=cmndStr)
 
         logControler = icm.LOG_Control()
         logControler.loggerSetLevel(20)
@@ -254,9 +256,8 @@ class AalsRepo_LiveParams(bpo.BpoRepo):
     ):
         """get bpoPath, join with rel."""
         repoClassName = self.__class__.__name__
-        repoName = repoClassName.replace('AaisRepo_', '')
+        repoName = repoClassName.replace('AalsRepo_', '')
         return dowcaseFirstLetterOfString(repoName)
-
 
     def repoName(
             self,
@@ -272,9 +273,6 @@ class AalsRepo_LiveParams(bpo.BpoRepo):
         self.repoBaseVar = os.path.join(self.bpo.baseDir, self.repoName()) # type: ignore
         return self.repoBaseVar
 
-    def info(self,):
-        print(f"AalsRepo_LiveParams {self.bpo.bpoId}")
-
     def relPathToAbsPath(
             self,
             relPath,
@@ -282,16 +280,17 @@ class AalsRepo_LiveParams(bpo.BpoRepo):
         """get bpoPath, join with rel."""
         return os.path.join(self.repoBase(), relPath) # type: ignore
 
-    def obtainFromFPs(self,):
-        pass
-
-    def update(
+    def repoFpsRelBase(
             self,
-            containerBpoId,
-            ipAddr
     ):
-        self.containerBpoId = containerBpoId
-        self.ipAddr = ipAddr
+        """get bpoPath, join with rel."""
+        return "fps"
+
+    def repoFpsBasePath(
+            self,
+    ):
+        """get bpoPath, join with rel."""
+        return os.path.join(self.repoBase(), self.repoFpsRelBase(),)
 
     @staticmethod
     def fpsAsIcmParamsAdd(
@@ -338,6 +337,17 @@ class AalsRepo_LiveParams(bpo.BpoRepo):
             argparseLongOpt='--plone3Passwd',
         )
 
+    @staticmethod
+    def fpNamesRelList():
+        return (
+            {
+                'aalsPlatformBpoId': "fps",
+                'aalsPlatformIpAddr': "fps",
+                'plone3User': "fps",
+                'plone3Passwd': "fps",
+            }
+        )
+
     def fpNamesList(self,):
         return (
             {
@@ -347,6 +357,21 @@ class AalsRepo_LiveParams(bpo.BpoRepo):
                 'plone3Passwd': self.relPathToAbsPath("fps"),
             }
         )
+
+    def fps_readTree(self,):
+        """Returns a dict of FILE_Param s."""
+        cmndOutcome = icm.OpOutcome()
+        FP_readTreeAtBaseDir = icm.FP_readTreeAtBaseDir()
+        FP_readTreeAtBaseDir.cmndOutcome = cmndOutcome
+
+        FP_readTreeAtBaseDir.cmnd(
+            interactive=False,
+            FPsDir=self.repoFpsBasePath()
+        )
+        if cmndOutcome.error: return cmndOutcome
+
+        self.fps_dictParams = cmndOutcome.results
+        return cmndOutcome
 
     def argsEcho(
             self,
@@ -435,6 +460,41 @@ def examples_parLive_basicAccess():
     cps=cpsInit() ; cps['bpoId'] = oneBpo ; cps['repo'] = oneRepo ; cps['method'] = "echoArgs"
     menuItem(verbosity='little')
 
+    cmndName = "fpParamsList" ; cmndArgs = "" ;
+    cps=cpsInit() ; cps['bpoId'] = oneBpo
+    menuItem(verbosity='little')
+
+    cmndArgs = "basic" ; menuItem(verbosity='little')
+    cmndArgs = "setExamples getExamples" ; menuItem(verbosity='little')
+
+    cmndName = "fpParamsSet" ; cmndArgs = "" ;
+    cps=cpsInit() ; cps['bpoId'] = oneBpo
+
+    cps['aalsPlatformBpoId'] = "thisBpoId"
+    menuItem(verbosity='little')
+
+    cps['aalsPlatformIpAddr'] = "127.0.0.1"
+    menuItem(verbosity='little')
+
+    cps['plone3User'] = "UserOfPlone3"
+    menuItem(verbosity='little')
+
+    cps['plone3Passwd'] = "PasswdForPlone3"
+    menuItem(verbosity='little')
+
+    cps['aalsPlatformBpoId'] = "thisBpoId"
+    cps['aalsPlatformIpAddr'] = "127.0.0.1"
+    cps['plone3User'] = "UserOfPlone3"
+    cps['plone3Passwd'] = "PasswdForPlone3"
+    menuItem(verbosity='little')
+
+    cmndName = "fpParamsRead" ; cmndArgs = "" ;
+    cps=cpsInit() ; cps['bpoId'] = oneBpo
+    menuItem(verbosity='little')
+
+    cmndArgs = "basic" ; menuItem(verbosity='little')
+    cmndArgs = "setExamples getExamples" ; menuItem(verbosity='little')
+
 
 ####+BEGIN: bx:dblock:python:section :title "ICM Commands"
 """
@@ -480,8 +540,7 @@ class repoInvoke(icm.Cmnd):
         if not self.cmndArgsValidate(effectiveArgsList, cmndArgsSpecDict, outcome=cmndOutcome):
             return cmndOutcome
 ####+END:
-        thisBpo = aaisBpo.obtainBpo(bpoId,)
-        aalsRepo_liveParams = AalsRepo_LiveParams(bpoId,)
+        thisBpo = aaisBpo.obtainBpo(bpoId,) ; icm.unusedSuppress(thisBpo)
 
         print(effectiveArgsList)
 
@@ -505,13 +564,106 @@ class repoInvoke(icm.Cmnd):
 ***** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  Description
 """
 
+####+BEGIN: bx:icm:python:cmnd:classHead :cmndName "fpParamsList" :parsMand "bpoId" :parsOpt "" :argsMin "0" :argsMax "3" :asFunc "" :interactiveP ""
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  ICM-Cmnd   :: /fpParamsList/ parsMand=bpoId parsOpt= argsMin=0 argsMax=3 asFunc= interactive=  [[elisp:(org-cycle)][| ]]
+"""
+class fpParamsList(icm.Cmnd):
+    cmndParamsMandatory = [ 'bpoId', ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 0, 'Max': 3,}
 
-####+BEGIN: bx:icm:python:cmnd:classHead :cmndName "parsSet" :parsMand "bpoId repo" :parsOpt "" :argsMin "0" :argsMax "0" :asFunc "" :interactiveP ""
+    @icm.subjectToTracking(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+        interactive=False,        # Can also be called non-interactively
+        bpoId=None,         # or Cmnd-Input
+        argsList=[],         # or Args-Input
+    ):
+        cmndOutcome = self.getOpOutcome()
+        if interactive:
+            if not self.cmndLineValidate(outcome=cmndOutcome):
+                return cmndOutcome
+            effectiveArgsList = G.icmRunArgsGet().cmndArgs  # type: ignore
+        else:
+            effectiveArgsList = argsList
+
+        callParamsDict = {'bpoId': bpoId, }
+        if not icm.cmndCallParamsValidate(callParamsDict, interactive, outcome=cmndOutcome):
+            return cmndOutcome
+        bpoId = callParamsDict['bpoId']
+
+        cmndArgsSpecDict = self.cmndArgsSpec()
+        if not self.cmndArgsValidate(effectiveArgsList, cmndArgsSpecDict, outcome=cmndOutcome):
+            return cmndOutcome
+####+END:
+        thisBpo = aaisBpo.obtainBpo(bpoId,) ; icm.unusedSuppress(thisBpo)
+
+        aalsRepo_liveParams = AalsRepo_LiveParams(bpoId,)
+        fpNamesList = aalsRepo_liveParams.fpNamesList()
+
+        if interactive:
+            formatTypes = self.cmndArgsGet("0&2", cmndArgsSpecDict, effectiveArgsList)
+        else:
+            formatTypes = effectiveArgsList
+
+        if formatTypes:
+            if formatTypes[0] == "all":
+                    cmndArgsSpec = cmndArgsSpecDict.argPositionFind("0&2")
+                    argChoices = cmndArgsSpec.argChoicesGet()
+                    argChoices.pop(0)
+                    formatTypes = argChoices
+
+        for each in formatTypes:
+            if each == 'basic':
+                FP_listIcmParams(fpNamesList,)
+            elif each == 'getExamples':
+                print("Get Examples Come Here")
+            elif each == 'setExamples':
+                print("Set Examples Come Here")
+            else:
+                icm.EH_problem_usageError(f"Unknown {each}")
+
+        return cmndOutcome
+
+####+BEGIN: bx:icm:python:method :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList ""
+    """
+**  [[elisp:(org-cycle)][| ]]  [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(org-tree-to-indirect-buffer)][|>]] [[elisp:(blee:ppmm:org-mode-toggle)][Nat]] [[elisp:(beginning-of-buffer)][Top]] [[elisp:(delete-other-windows)][(1)]] || Method-anyOrNone :: /cmndArgsSpec/ retType=bool argsList=nil deco=default  [[elisp:(org-cycle)][| ]]
 """
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  ICM-Cmnd   :: /parsSet/ parsMand=bpoId repo parsOpt= argsMin=0 argsMax=0 asFunc= interactive=  [[elisp:(org-cycle)][| ]]
+    @icm.subjectToTracking(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmndArgsSpec(self):
+####+END:
+        """
+***** Cmnd Args Specification
 """
-class parsSet(icm.Cmnd):
-    cmndParamsMandatory = [ 'bpoId', 'repo', ]
+        cmndArgsSpecDict = icm.CmndArgsSpecDict()
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="0&2",
+            argName="formatTypes",
+            argDefault="all",
+            argChoices=['all', 'basic', 'setExamples', 'getExamples'],
+            argDescription="Action to be specified by rest"
+        )
+
+        return cmndArgsSpecDict
+
+####+BEGIN: bx:icm:python:method :methodName "cmndDocStr" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList ""
+    """
+**  [[elisp:(org-cycle)][| ]] [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(bx:orgm:indirectBufOther)][|>]] [[elisp:(bx:orgm:indirectBufMain)][|I]] [[elisp:(blee:ppmm:org-mode-toggle)][|N]] [[elisp:(org-top-overview)][|O]] [[elisp:(progn (org-shifttab) (org-content))][|C]] [[elisp:(delete-other-windows)][|1]]  Method-anyOrNone :: /cmndDocStr/ retType=bool argsList=nil deco=default  [[elisp:(org-cycle)][| ]]
+"""
+    @icm.subjectToTracking(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmndDocStr(self):
+####+END:
+        return """
+***** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  Returns the full path of the Sr baseDir.
+"""
+
+
+####+BEGIN: bx:icm:python:cmnd:classHead :cmndName "fpParamsList" :parsMand "bpoId" :parsOpt "" :argsMin "0" :argsMax "0" :asFunc "" :interactiveP ""
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  ICM-Cmnd   :: /fpParamsSet/ parsMand=bpoId parsOpt= argsMin=0 argsMax=0 asFunc= interactive=  [[elisp:(org-cycle)][| ]]
+"""
+class fpParamsSet(icm.Cmnd):
+    cmndParamsMandatory = [ 'bpoId', ]
     cmndParamsOptional = [ ]
     cmndArgsLen = {'Min': 0, 'Max': 0,}
 
@@ -519,23 +671,21 @@ class parsSet(icm.Cmnd):
     def cmnd(self,
         interactive=False,        # Can also be called non-interactively
         bpoId=None,         # or Cmnd-Input
-        repo=None,         # or Cmnd-Input
     ):
         cmndOutcome = self.getOpOutcome()
         if interactive:
             if not self.cmndLineValidate(outcome=cmndOutcome):
                 return cmndOutcome
 
-        callParamsDict = {'bpoId': bpoId, 'repo': repo, }
+        callParamsDict = {'bpoId': bpoId, }
         if not icm.cmndCallParamsValidate(callParamsDict, interactive, outcome=cmndOutcome):
             return cmndOutcome
         bpoId = callParamsDict['bpoId']
-        repo = callParamsDict['repo']
 
 ####+END:
-        thisBpo = aaisBpo.obtainBpo(bpoId,)
-        aalsRepo_liveParams = AalsRepo_LiveParams(bpoId,)
+        thisBpo = aaisBpo.obtainBpo(bpoId,) ; icm.unusedSuppress(thisBpo)
 
+        aalsRepo_liveParams = AalsRepo_LiveParams(bpoId,)
         fpNamesList = aalsRepo_liveParams.fpNamesList()
 
         FP_writeWithIcmParams(fpNamesList,)
@@ -561,6 +711,153 @@ class parsSet(icm.Cmnd):
 ***** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  Returns the full path of the Sr baseDir.
 """
 
+
+"""
+*  [[elisp:(beginning-of-buffer)][Top]] ################ [[elisp:(delete-other-windows)][(1)]]      *File Parameters Get/Set -- Commands*
+"""
+
+
+
+####+BEGIN: bx:icm:python:cmnd:classHead :cmndName "fpParamsRead" :parsMand "bpoId" :parsOpt "" :argsMin "0" :argsMax "999" :asFunc "" :interactiveP ""
+"""
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  ICM-Cmnd   :: /fpParamsRead/ parsMand=bpoId parsOpt= argsMin=0 argsMax=999 asFunc= interactive=  [[elisp:(org-cycle)][| ]]
+"""
+class fpParamsRead(icm.Cmnd):
+    cmndParamsMandatory = [ 'bpoId', ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 0, 'Max': 999,}
+
+    @icm.subjectToTracking(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+        interactive=False,        # Can also be called non-interactively
+        bpoId=None,         # or Cmnd-Input
+        argsList=[],         # or Args-Input
+    ):
+        cmndOutcome = self.getOpOutcome()
+        if interactive:
+            if not self.cmndLineValidate(outcome=cmndOutcome):
+                return cmndOutcome
+            effectiveArgsList = G.icmRunArgsGet().cmndArgs  # type: ignore
+        else:
+            effectiveArgsList = argsList
+
+        callParamsDict = {'bpoId': bpoId, }
+        if not icm.cmndCallParamsValidate(callParamsDict, interactive, outcome=cmndOutcome):
+            return cmndOutcome
+        bpoId = callParamsDict['bpoId']
+
+        cmndArgsSpecDict = self.cmndArgsSpec()
+        if not self.cmndArgsValidate(effectiveArgsList, cmndArgsSpecDict, outcome=cmndOutcome):
+            return cmndOutcome
+####+END:
+        thisBpo = aaisBpo.obtainBpo(bpoId,) ; icm.unusedSuppress(thisBpo)
+
+        aalsRepo_liveParams = AalsRepo_LiveParams(bpoId,)
+        fpNamesList = aalsRepo_liveParams.fpNamesList()
+
+        if interactive:
+            formatTypes = self.cmndArgsGet("0&999", cmndArgsSpecDict, effectiveArgsList)
+        else:
+            formatTypes = effectiveArgsList
+
+        fpBaseDir = aalsRepo_liveParams.repoFpsBasePath()
+
+        for each in formatTypes:
+            if each == 'all':
+                icm.LOG_here(f"""format={each} -- fpBaseDir={fpBaseDir}""")
+                FP_readTreeAtBaseDir_CmndOutput(
+                    interactive=interactive,
+                    fpBaseDir=fpBaseDir,
+                    cmndOutcome=cmndOutcome,
+                )
+            elif each == 'obj':
+                cmndOutcome= aalsRepo_liveParams.fps_readTree()
+                if cmndOutcome.error: return cmndOutcome
+
+                thisParamDict = aalsRepo_liveParams.fps_dictParams
+                if interactive:
+                    icm.ANN_write(aalsRepo_liveParams.repoFpsBasePath())
+                    icm.FILE_paramDictPrint(thisParamDict)
+
+            else:
+                icm.LOG_here(f"""format={each} -- fpBaseDir={fpBaseDir}""")
+                FP_readTreeAtBaseDir_CmndOutput(
+                    interactive=False,
+                    fpBaseDir=fpBaseDir,
+                    cmndOutcome=cmndOutcome,
+                )
+                print(cmndOutcome.results)
+                fpsDict = cmndOutcome.results
+                fp = fpsDict[each]
+                print(fp.parValueGet())
+
+                fp = icm.FILE_ParamReadFrom(
+                    parRoot=fpBaseDir,
+                    parName=each,
+                )
+                print(fp.parValueGet())
+
+        return cmndOutcome
+
+####+BEGIN: bx:icm:python:method :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList ""
+    """
+**  [[elisp:(org-cycle)][| ]]  [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(org-tree-to-indirect-buffer)][|>]] [[elisp:(blee:ppmm:org-mode-toggle)][Nat]] [[elisp:(beginning-of-buffer)][Top]] [[elisp:(delete-other-windows)][(1)]] || Method-anyOrNone :: /cmndArgsSpec/ retType=bool argsList=nil deco=default  [[elisp:(org-cycle)][| ]]
+"""
+    @icm.subjectToTracking(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmndArgsSpec(self):
+####+END:
+        """
+***** Cmnd Args Specification
+"""
+        cmndArgsSpecDict = icm.CmndArgsSpecDict()
+        argChoices = ['all', 'obj']
+        for each in AalsRepo_LiveParams.fpNamesRelList(): argChoices.append(each)
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="0&999",
+            argName="formatTypes",
+            argDefault="all",
+            argChoices=argChoices,
+            argDescription="One, many or all"
+        )
+
+        return cmndArgsSpecDict
+
+####+BEGIN: bx:icm:python:method :methodName "cmndDocStr" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList ""
+    """
+**  [[elisp:(org-cycle)][| ]] [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(bx:orgm:indirectBufOther)][|>]] [[elisp:(bx:orgm:indirectBufMain)][|I]] [[elisp:(blee:ppmm:org-mode-toggle)][|N]] [[elisp:(org-top-overview)][|O]] [[elisp:(progn (org-shifttab) (org-content))][|C]] [[elisp:(delete-other-windows)][|1]]  Method-anyOrNone :: /cmndDocStr/ retType=bool argsList=nil deco=default  [[elisp:(org-cycle)][| ]]
+"""
+    @icm.subjectToTracking(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmndDocStr(self):
+####+END:
+        return """
+***** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  Returns the full path of the Sr baseDir.
+"""
+
+
+####+BEGIN: bx:icm:python:func :funcName "FP_readTreeAtBaseDir_CmndOutput" :funcType "anyOrNone" :retType "bool" :deco "" :argsList "interactive fpBaseDir cmndOutcome"
+"""
+*  [[elisp:(org-cycle)][| ]]  [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(org-tree-to-indirect-buffer)][|>]] [[elisp:(blee:ppmm:org-mode-toggle)][Nat]] [[elisp:(beginning-of-buffer)][Top]] [[elisp:(delete-other-windows)][(1)]] || Func-anyOrNone :: /FP_readTreeAtBaseDir_CmndOutput/ retType=bool argsList=(interactive fpBaseDir cmndOutcome)  [[elisp:(org-cycle)][| ]]
+"""
+def FP_readTreeAtBaseDir_CmndOutput(
+    interactive,
+    fpBaseDir,
+    cmndOutcome,
+):
+####+END:
+    """Invokes FP_readTreeAtBaseDir.cmnd as interactive-output only."""
+    #
+    # Interactive-Output + Chained-Outcome Command Invokation
+    #
+    FP_readTreeAtBaseDir = icm.FP_readTreeAtBaseDir()
+    FP_readTreeAtBaseDir.cmndLineInputOverRide = True
+    FP_readTreeAtBaseDir.cmndOutcome = cmndOutcome
+
+    return FP_readTreeAtBaseDir.cmnd(
+        interactive=interactive,
+        FPsDir=fpBaseDir,
+    )
+
+
 ####+BEGIN: bx:icm:python:func :funcName "FP_writeWithIcmParams" :funcType "succFail" :retType "bool" :deco "" :argsList "icmParamsAndDests"
 """
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Func-succFail :: /FP_writeWithIcmParams/ retType=bool argsList=(icmParamsAndDests)  [[elisp:(org-cycle)][| ]]
@@ -570,7 +867,7 @@ def FP_writeWithIcmParams(
 ):
 ####+END:
     G = icm.IcmGlobalContext()
-    icmRunArgs = G.icmRunArgsGet()
+    icmRunArgs = G.icmRunArgsGet() ; icm.unusedSuppressForEval(icmRunArgs)
     icmParams = G.icmParamDictGet()
 
     cmndParamsDict = dict()
@@ -589,105 +886,28 @@ def FP_writeWithIcmParams(
             thisIcmParam = icmParams.parNameFind(eachParam)   # type: ignore
             thisIcmParam.parValueSet(cmndParamsDict[eachParam])
             thisIcmParam.writeAsFileParam(parRoot=eachDest,)
-            print(eachDest)
 
 
-
-####+BEGIN: bx:icm:python:cmnd:classHead :cmndName "parsSetWorking" :parsMand "bpoId repo" :parsOpt "" :argsMin "0" :argsMax "0" :asFunc "" :interactiveP ""
+####+BEGIN: bx:icm:python:func :funcName "FP_listIcmParams" :funcType "succFail" :retType "bool" :deco "" :argsList "icmParamsAndDests"
 """
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  ICM-Cmnd   :: /parsSetWorking/ parsMand=bpoId repo parsOpt= argsMin=0 argsMax=0 asFunc= interactive=  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Func-succFail :: /FP_listIcmParams/ retType=bool argsList=(icmParamsAndDests)  [[elisp:(org-cycle)][| ]]
 """
-class parsSetWorking(icm.Cmnd):
-    cmndParamsMandatory = [ 'bpoId', 'repo', ]
-    cmndParamsOptional = [ ]
-    cmndArgsLen = {'Min': 0, 'Max': 0,}
-
-    @icm.subjectToTracking(fnLoc=True, fnEntry=True, fnExit=True)
-    def cmnd(self,
-        interactive=False,        # Can also be called non-interactively
-        bpoId=None,         # or Cmnd-Input
-        repo=None,         # or Cmnd-Input
-    ):
-        cmndOutcome = self.getOpOutcome()
-        if interactive:
-            if not self.cmndLineValidate(outcome=cmndOutcome):
-                return cmndOutcome
-
-        callParamsDict = {'bpoId': bpoId, 'repo': repo, }
-        if not icm.cmndCallParamsValidate(callParamsDict, interactive, outcome=cmndOutcome):
-            return cmndOutcome
-        bpoId = callParamsDict['bpoId']
-        repo = callParamsDict['repo']
-
+def FP_listIcmParams(
+    icmParamsAndDests,
+):
 ####+END:
+    G = icm.IcmGlobalContext()
+    icmRunArgs = G.icmRunArgsGet() ; icm.unusedSuppressForEval(icmRunArgs)
+    icmParams = G.icmParamDictGet()
 
-        G = icm.IcmGlobalContext()
-        icmRunArgs = G.icmRunArgsGet()
-        icmParams = G.icmParamDictGet()
-        print(f"YYY {icmParams}")
+    # List relevant cmndParams as fileParams
+    for eachParam, eachDest  in icmParamsAndDests.items():
+        thisIcmParam = icmParams.parNameFind(eachParam)   # type: ignore
+        print(thisIcmParam)
+        print(eachDest)
 
-        thisBpo = aaisBpo.obtainBpo(bpoId,)
-        aalsRepo_liveParams = AalsRepo_LiveParams(bpoId,)
 
-        fpNamesList = aalsRepo_liveParams.fpNamesList()
 
-        # Read from cmndLine into callParamsDict
-        for eachKey, eachValue in fpNamesList.items():
-            print(f"{eachKey} -- {eachValue}")
-            callParamsDict[eachKey] = None
-            print(icmRunArgs)
-            try:
-                exec("callParamsDict[eachKey] = icmRunArgs." + eachKey)
-            except AttributeError:
-                continue
-
-            if callParamsDict[eachKey]:
-                print("GOT IT")
-
-        print(callParamsDict)
-
-        # Write relevant cmndParams as fileParams
-
-        parDict = icmParams.parDictGet()
-        print(icmParams.parDictGet())
-        print(f"OOO {parDict}")
-
-        print(parDict['plone3User'])
-        print(parDict['repo'])
-        print(f"NNN {parDict['plone3User']}")
-
-        for eachKey in fpNamesList:
-            if callParamsDict[eachKey]:
-                print(f"MMMM {parDict[eachKey]}")
-                print(f"JJJ writing {eachKey}")
-                print(icmParams.parNameFind(parName=eachKey))
-                thisIcmParam = icmParams.parNameFind(eachKey)
-                thisIcmParam.parValueSet(callParamsDict[eachKey])
-                thisIcmParam.writeAsFileParam(parRoot="/tmp/")
-
-        # print(callParamsDict)
-        print(parDict['plone3User'])
-
-        retVal = "notyet"
-
-        if interactive:
-            icm.ANN_write("{}".format(retVal))
-
-        return cmndOutcome.set(
-            opError=icm.notAsFailure(retVal),
-            opResults=retVal,
-        )
-
-####+BEGIN: bx:icm:python:method :methodName "cmndDocStr" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList ""
-    """
-**  [[elisp:(org-cycle)][| ]] [[elisp:(org-show-subtree)][|=]] [[elisp:(show-children 10)][|V]] [[elisp:(bx:orgm:indirectBufOther)][|>]] [[elisp:(bx:orgm:indirectBufMain)][|I]] [[elisp:(blee:ppmm:org-mode-toggle)][|N]] [[elisp:(org-top-overview)][|O]] [[elisp:(progn (org-shifttab) (org-content))][|C]] [[elisp:(delete-other-windows)][|1]]  Method-anyOrNone :: /cmndDocStr/ retType=bool argsList=nil deco=default  [[elisp:(org-cycle)][| ]]
-"""
-    @icm.subjectToTracking(fnLoc=True, fnEntry=True, fnExit=True)
-    def cmndDocStr(self):
-####+END:
-        return """
-***** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  Returns the full path of the Sr baseDir.
-"""
 
 ####+BEGIN: bx:icm:python:section :title "Common/Generic Facilities -- Library Candidates"
 """
